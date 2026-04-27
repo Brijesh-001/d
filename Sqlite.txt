@@ -1,0 +1,120 @@
+# Full ResNet-18 Architecture (TensorFlow / Keras)
+
+import tensorflow as tf
+from tensorflow.keras.layers import (
+    Conv2D, BatchNormalization, ReLU,
+    Add, MaxPooling2D, GlobalAveragePooling2D,
+    Dense, Input
+)
+from tensorflow.keras.models import Model
+
+# ==================================================
+# Residual Block
+# ==================================================
+
+def basic_block(x, filters, stride=1):
+
+    shortcut = x
+
+    # Conv 1
+    x = Conv2D(filters, (3,3), strides=stride,
+               padding='same')(x)
+    x = BatchNormalization()(x)
+    x = ReLU()(x)
+
+    # Conv 2
+    x = Conv2D(filters, (3,3),
+               padding='same')(x)
+    x = BatchNormalization()(x)
+
+    # Shortcut if shape changes
+    if stride != 1 or shortcut.shape[-1] != filters:
+        shortcut = Conv2D(filters, (1,1),
+                          strides=stride,
+                          padding='same')(shortcut)
+        shortcut = BatchNormalization()(shortcut)
+
+    # Add skip connection
+    x = Add()([x, shortcut])
+    x = ReLU()(x)
+
+    return x
+
+# ==================================================
+# ResNet-18 Model
+# ==================================================
+
+def ResNet18(input_shape=(224,224,3), classes=1000):
+
+    inputs = Input(shape=input_shape)
+
+    x = Conv2D(64, (7,7), strides=2,
+               padding='same')(inputs)
+    x = BatchNormalization()(x)
+    x = ReLU()(x)
+    x = MaxPooling2D((3,3), strides=2,
+                     padding='same')(x)
+
+    # 4 Stages
+    x = basic_block(x, 64)
+    x = basic_block(x, 64)
+
+    x = basic_block(x, 128, stride=2)
+    x = basic_block(x, 128)
+
+    x = basic_block(x, 256, stride=2)
+    x = basic_block(x, 256)
+
+    x = basic_block(x, 512, stride=2)
+    x = basic_block(x, 512)
+
+    # Output
+    x = GlobalAveragePooling2D()(x)
+    outputs = Dense(classes,
+                    activation='softmax')(x)
+
+    model = Model(inputs, outputs)
+
+    return model
+
+# ==================================================
+# Build Model
+# ==================================================
+
+model = ResNet18()
+
+model.summary()
+
+
+---------------------------------------------------------------
+# Install required library
+# pip install transformers torch
+
+from transformers import pipeline
+
+# Load pre-trained BERT model for Named Entity Recognition
+ner = pipeline(
+    "ner",
+    model="dslim/bert-base-NER",
+    tokenizer="dslim/bert-base-NER",
+    grouped_entities=True
+)
+
+# Normal sample sentences
+sentences = [
+    "John went to Paris last summer.",
+    "Mary bought a phone from Apple.",
+    "David met his friend in London on Monday."
+]
+
+# Run NER on each sentence
+for sentence in sentences:
+    print("\nSentence:", sentence)
+    
+    results = ner(sentence)
+    
+    for entity in results:
+        print(f"{entity['word']} --> {entity['entity_group']}")
+
+
+-------------------------------------------------------------------
