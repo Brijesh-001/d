@@ -1,0 +1,602 @@
+4th
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+  <script src="aframe.min.js"></script>
+</head>
+
+<body>
+  <a-scene >
+
+    <!-- Camera -->
+    <a-entity position="0 1.6 4">
+      <a-camera></a-camera>
+    </a-entity>
+
+    <!-- Lights -->
+    <a-light type="directional" position="1 1 1" intensity="0.9"></a-light>
+    <a-light type="ambient" intensity="0.5"></a-light>
+
+    <!-- Rotating Box -->
+    <a-box
+      position="0 1 -3"
+      rotation="0 45 0"
+      color="#737373"
+      
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 2000">
+    </a-box>
+
+    <!-- Rotating Cone -->
+    <a-cone
+      position="1.5 1.5 -4"
+      radius-bottom="0.6"
+      height="1.6"
+      color="#b30059"
+      
+      animation="property: position; to: 3 1.5 -4; dir: alternate; loop: true; dur: 1200; easing: easeInOutSine">
+    </a-cone>
+
+    <!-- Rotating Triangle -->
+    <a-triangle
+      position="1 1 -1"
+
+      color="#ccffff"
+      
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 1500">
+    </a-triangle>
+
+    <!-- Rotating Cylinder -->
+    <a-cylinder
+      position="-2 1 -3"
+      radius="0.5"
+      height="1.5"
+      color="#800000"
+      
+      animation="property: rotation; to: 360 0 0; loop: true; dur: 1500">
+    </a-cylinder>
+
+    <!-- Bouncing Sphere -->
+    <a-sphere
+      position="0 2.5 -3"
+      radius="0.6"
+      color="#009999"
+      
+      animation="property: position; to: 0 3.2 -3; dir: alternate; loop: true; dur: 1200">
+    </a-sphere>
+
+    <!-- Ground Plane -->
+    <a-plane
+      position="0 0 -4"
+      rotation="-90 0 0"
+      width="12"
+      height="12"
+      color="#ffcccc"
+      
+    </a-plane>
+
+  </a-scene>
+</body>
+</html>
+
+---------------------------------------------------------------------------------------------------------------------
+
+
+5th
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A-Frame Hover Torus to Moving Sphere</title>
+
+  <script src="aframe.min.js"></script>
+
+  <script>
+    // Hover color change component
+    AFRAME.registerComponent('hover-color', {
+      init: function () {
+        const el = this.el;
+        const originalColor = el.getAttribute('material').color;
+
+        el.addEventListener('mouseenter', () => {
+          el.setAttribute('material', 'color', '#990000'); 
+        });
+
+        el.addEventListener('mouseleave', () => {
+          el.setAttribute('material', 'color', originalColor);
+        });
+      }
+    });
+
+    // Click scale toggle for box
+    AFRAME.registerComponent('click-scale-toggle', {
+      init: function () {
+        const el = this.el;
+        let scaled = false;
+
+        el.addEventListener('click', () => {
+          if (!scaled) {
+            el.setAttribute('scale', '2 2 2');
+          } else {
+            el.setAttribute('scale', '1 1 1');
+          }
+          scaled = !scaled;
+        });
+      }
+    });
+
+    // Torus hover -> replace with moving sphere
+    AFRAME.registerComponent('torus-to-sphere', {
+      init: function () {
+        const torus = this.el;
+        const sphere = document.querySelector('#hoverSphere');
+
+        torus.addEventListener('mouseenter', () => {
+          torus.setAttribute('visible', false);
+          sphere.setAttribute('visible', true);
+          sphere.emit('startMove');
+        });
+
+        torus.addEventListener('mouseleave', () => {
+          torus.setAttribute('visible', true);
+          sphere.setAttribute('visible', false);
+        });
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <a-scene>
+
+    <!-- Camera -->
+    <a-camera position="0 1.6 4"
+              cursor="rayOrigin: mouse"
+              raycaster="objects: .interactive">
+    </a-camera>
+
+    <!-- Lights -->
+    <a-light type="directional" position="1 1 1" intensity="0.9"></a-light>
+    <a-light type="ambient" intensity="0.5"></a-light>
+
+    <!-- Cube (light red) -->
+    <a-box class="interactive"
+           position="-1.8 1 -3"
+           material="color: #ffb3b3"
+           click-scale-toggle>
+    </a-box>
+
+    <!-- Cylinder (light green) -->
+    <a-cylinder class="interactive"
+                position="0 1 -3"
+                radius="0.5"
+                height="1.5"
+                material="color: #82E0AA"
+                hover-color>
+    </a-cylinder>
+
+    <!-- Torus (light yellow) -->
+    <a-torus class="interactive"
+             position="1.8 1.2 -3"
+             radius="0.7"
+             radius-tubular="0.25"
+             material="color: #F7DC6F"
+             torus-to-sphere>
+    </a-torus>
+
+    <!-- Sphere appears on hover -->
+    <a-sphere id="hoverSphere"
+              visible="false"
+              position="1.8 1.2 -3"
+              radius="0.5"
+              material="color: #85C1E9"
+              animation__move="property: position;
+                               to: 1.8 2.2 -3;
+                               dir: alternate;
+                               loop: true;
+                               dur: 800;
+                               startEvents: startMove">
+    </a-sphere>
+
+    <!-- Ground -->
+    <a-plane position="0 0 -4"
+             rotation="-90 0 0"
+             width="10"
+             height="10"
+             material="color: #D5F5E3">
+    </a-plane>
+
+  </a-scene>
+</body>
+</html>
+-------------------------------------------------------------------------------------------------------
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>360 Image Gallery</title>
+<script src="aframe.min.js"></script>
+
+<script>
+AFRAME.registerComponent('change-scene', {
+schema: { target: {type: 'string'} },
+init: function () {
+this.el.addEventListener('click', () => {
+document.querySelector('#sky').setAttribute('src', this.data.target);
+});
+}
+});
+</script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+
+<a-scene>
+
+<a-assets>
+<img id="img1" src="images/img1.jpg">
+<img id="img2" src="images/img2.jpg">
+<img id="img3" src="images/img3.jpg">
+</a-assets>
+
+<a-camera position="0 1.6 0" look-controls cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-camera>
+
+<a-sky id="sky" src="#img1" rotation="0 -90 0"></a-sky>
+
+<a-circle class="clickable" position="-2 1.5 -3" radius="0.35" material="color: #c2c2d6" change-scene="target: #img1"></a-circle>
+<a-text value="Living Room" position="-2 2.1 -3" color="#000000" align="center" width="4" font="mozillavr" shader="msdf"></a-text>
+
+<a-circle class="clickable" position="0 1.5 -3" radius="0.35" material="color: #ffccb3" change-scene="target: #img2"></a-circle>
+<a-text value="Kitchen" position="0 2.1 -3" color="#000000" align="center" width="4" font="mozillavr" shader="msdf"></a-text>
+
+<a-circle class="clickable" position="2 1.5 -3" radius="0.35" material="color: #ffffcc" change-scene="target: #img3"></a-circle>
+<a-text value="Bed room" position="2 2.1 -3" color="#000000" align="center" width="4" font="mozillavr" shader="msdf"></a-text>
+
+</a-scene>
+
+</body>
+</html>
+
+----------------------------------------------------------------------------------------------------------------------------
+
+7th
+
+
+<!doctype html>
+<html>
+<head>
+  <title>A-Frame Geolocation (Sphere, Torus, Cone)</title>
+
+  <!-- A-Frame -->
+  <script src="/aframe.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      function showShapes(position) {
+        var currentLatitude = position.coords.latitude;
+        var currentLongitude = position.coords.longitude;
+
+        console.log("Latitude:", currentLatitude);
+        console.log("Longitude:", currentLongitude);
+
+        document.getElementById('currentLocation').innerHTML =
+          `Lat: ${currentLatitude.toFixed(6)}, Lon: ${currentLongitude.toFixed(6)}`;
+
+        var locations = [
+          { id: "sphere", lat: 12.905560, lon: 77.566040, threshold: 0.005 },
+          { id: "torus",  lat: 12.873930, lon: 77.553514, threshold: 0.005 },
+          { id: "cone",   lat: 12.873831, lon: 77.553439, threshold: 0.005 }
+        ];
+
+        locations.forEach(location => {
+          var shape = document.querySelector(`#${location.id}`);
+
+          if (
+            shape &&
+            Math.abs(currentLatitude - location.lat) < location.threshold &&
+            Math.abs(currentLongitude - location.lon) < location.threshold
+          ) {
+            shape.setAttribute('visible', true);
+          }
+        });
+      }
+
+      function locationError(error) {
+        console.error("Error getting location:", error);
+        document.getElementById('currentLocation').innerHTML =
+          `Error getting location: ${error.message}`;
+      }
+
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            showShapes,
+            locationError,
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0
+            }
+          );
+        } else {
+          document.getElementById('currentLocation').innerHTML =
+            "Geolocation is not supported by this browser.";
+        }
+      }
+
+      getLocation();
+    });
+  </script>
+</head>
+
+<body>
+  <h3 id="currentLocation">Fetching location...</h3>
+
+  <a-scene>
+    <!-- Sphere -->
+    <a-sphere
+      id="sphere"
+      position="0 0.75 -3"
+      radius="0.75"
+      color="green"
+      visible="false">
+    </a-sphere>
+
+    <!-- Torus -->
+    <a-torus
+      id="torus"
+      position="2 1 -3"
+      radius="0.6"
+      radius-tubular="0.15"
+      color="purple"
+      visible="false">
+    </a-torus>
+
+    <!-- Cone -->
+    <a-cone
+      id="cone"
+      position="-2 0.75 -3"
+      radius-bottom="0.6"
+      height="1.5"
+      color="orange"
+      visible="false">
+    </a-cone>
+
+    <!-- Camera -->
+    <a-camera gps-camera rotation-reader></a-camera>
+  </a-scene>
+</body>
+</html>
+
+---------------------------------------------------------------------------------------------
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lab 8 – Custom Marker AR</title>
+
+  <script src="aframe.min.js"></script>
+  <script src="aframe-ar.js"></script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+
+    <a-marker type="pattern" url="pattern-kanji.patt">
+
+      <!-- Light purple cone -->
+      <a-cone
+        position="0 0.75 0"
+        radius-bottom="0.5"
+        height="1.5"
+        color="#C8A2C8"
+        material="opacity: 0.9; transparent: true">
+      </a-cone>
+
+      <!-- Light blue torus -->
+      <a-torus
+        position="1.2 0.75 0"
+        radius="0.5"
+        radius-tubular="0.15"
+        color="#ADD8E6"
+        material="opacity: 0.9; transparent: true">
+      </a-torus>
+
+    </a-marker>
+
+    <!-- Camera -->
+    <a-entity camera></a-entity>
+  </a-scene>
+</body>
+</html>
+
+
+-----------------------------------------------------------------------------------------------------
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Marker Based AR</title>
+
+  <script src="./aframe.min.js"></script>
+  <script src="./mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body { margin: 0; overflow: hidden; }
+  </style>
+</head>
+
+<body>
+
+<a-scene
+  mindar-image="imageTargetSrc: ./targets.mind;"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false"
+>
+
+  <a-camera position="0 0 0" look-controls="false"></a-camera>
+
+  <!-- target -->
+<a-entity mindar-image-target="targetIndex: 0">
+
+  <a-dodecahedron
+    radius="0.6"
+    scale="1 1 1"
+    position="0 0 0"
+    material="color: red; metalness: 0.5; roughness: 0.3; emissive: #550000"
+    animation="property: rotation; to: 0 360 0; loop: true; dur: 4000">
+  </a-dodecahedron>
+
+</a-entity>
+
+</a-scene>
+
+</body>
+</html>
+
+
+------------------------------------------------------------------------------------------
+10th
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LAB 10 - GLB Model</title>
+
+  <script src="aframe.min.js"></script>
+
+  <style>
+    body { margin:0; }
+
+    button {
+      position:absolute;
+      top:20px;
+      left:50%;
+      transform:translateX(-50%);
+      padding:12px 25px;
+      font-size:18px;
+      background:#4CC3D9;
+      border:none;
+      color:white;
+      border-radius:8px;
+      cursor:pointer;
+      z-index:10;
+    }
+  </style>
+</head>
+
+<body>
+
+<a-scene>
+
+  <a-assets>
+    <!-- LOAD GLB MODEL -->
+    <a-asset-item id="car" src="model/model.glb"></a-asset-item>
+  </a-assets>
+
+  <!-- Camera -->
+  <a-camera position="0 1.6 4"></a-camera>
+
+  <!-- 3D Model -->
+  <a-entity 
+      id="model"
+      gltf-model="#car"
+      position="0 0 -3"
+      rotation="0 45 0"
+      scale="12 12 12">
+  </a-entity>
+
+</a-scene>
+
+<button onclick="rotateModel()">Rotate Model 45°</button>
+
+<script>
+function rotateModel(){
+  const m = document.querySelector("#model");
+  let r = m.getAttribute("rotation");
+  r.y += 45;
+  m.setAttribute("rotation", r);
+}
+</script>
+
+</body>
+</html>
+
+
+------------------------------------------------------------------------------------------------------------
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Multiple Image Based AR</title>
+
+<script src="aframe.min.js"></script>
+<script src="mindar-image-aframe.prod.js"></script>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+}
+</style>
+</head>
+
+<body>
+
+<a-scene
+mindar-image="imageTargetSrc: target.mind;"
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false">
+
+<a-camera position="0 0 0" look-controls="false"></a-camera>
+
+<!-- First Image Target -->
+<a-entity mindar-image-target="targetIndex: 0">
+<a-torus position="0 0 0" radius="0.5" radius-tubular="0.15" color="#ff9900"
+animation="property: rotation; to: 0 360 0; loop:true; dur:2500">
+</a-torus>
+</a-entity>
+
+<!-- Second Image Target -->
+<a-entity mindar-image-target="targetIndex: 1">
+<a-sphere position="0 0 0" radius="0.5" color="#3399ff"
+animation="property: position; to: 0 0.5 0; dir:alternate; loop:true; dur:1000">
+</a-sphere>
+</a-entity>
+
+</a-scene>
+
+</body>
+</html>
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+
+
+const express = require('express');
+const path = require('path');
+
+const app = express();
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
