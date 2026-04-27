@@ -1,0 +1,136 @@
+using UnityEngine;
+
+public class AnimationController : MonoBehaviour
+{
+    public Animator animator;
+    public ParticleSystem ps;
+
+    void Start()
+    {
+        animator = GetComponent<Animator>();
+        ps = GetComponentInChildren<ParticleSystem>();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            animator.SetBool("a", true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha1))
+        {
+            animator.SetBool("a", false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            animator.SetBool("b", true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha2))
+        {
+            animator.SetBool("b", false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            if (ps.isPlaying)
+                ps.Stop();
+            else
+                ps.Play();
+        }
+    }
+}
+
+-------------------------------------------------------------------------
+
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Lab2 : MonoBehaviour
+{
+    public float speed = 5f;
+
+    void Update()
+    {
+        // Get keyboard input
+        float moveX = Input.GetAxis("Horizontal"); // A/D or Left/Right
+        float moveZ = Input.GetAxis("Vertical");   // W/S or Up/Down
+
+        // Create movement vector
+        Vector3 move = new Vector3(moveX, 0f, moveZ);
+
+        // Move player
+        transform.Translate(move * speed * Time.deltaTime);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        // Check collision with obstacle
+        if (collision.gameObject.CompareTag("Obstacle"))
+        {
+            Debug.Log("Obstacle Found!");
+        }
+    }
+}
+
+
+
+--------------------------------------------------------------------------------------
+
+
+using UnityEngine;
+using UnityEngine.AI;
+
+public class Lab3 : MonoBehaviour
+{
+    public Transform player;
+    public float roamRadius = 10f;
+    public float detectionRange = 8f;
+
+    NavMeshAgent agent;
+    Vector3 roamPoint;
+
+    void Start()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        SetNewRoamPoint();
+    }
+
+    void Update()
+    {
+        float distance = Vector3.Distance(transform.position, player.position);
+
+        if (distance <= detectionRange)
+        {
+            // Follow player
+            agent.SetDestination(player.position);
+        }
+        else
+        {
+            // Roam randomly
+            if (!agent.pathPending && agent.remainingDistance < 0.5f)
+            {
+                SetNewRoamPoint();
+            }
+        }
+    }
+
+    void SetNewRoamPoint()
+    {
+        Vector3 randomDirection = Random.insideUnitSphere * roamRadius;
+        randomDirection += transform.position;
+
+        NavMeshHit hit;
+
+        NavMesh.SamplePosition(randomDirection, out hit, roamRadius, 1);
+
+        roamPoint = hit.position;
+
+        agent.SetDestination(roamPoint);
+    }
+}
