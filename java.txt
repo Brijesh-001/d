@@ -441,8 +441,9 @@ Hadoop Programming: Word Count Map Reduce Program using Java
 
 7: File management task in Hadoop using HDFS commands
 
-a) Uploading files to HDFS
-b) Retrieve files from HDFS
+a) Uploading files to HDFS					cd /home/hadoop/Training/CDH4/hadoop-2.0.0-cdh4.0.0/sbin
+
+b) Retrieve files from HDFS					./start-dfs.sh     jps
 c) Deleting files from HDFS
 
 Globe shape → Hadoop Manager → Open all in tabs
