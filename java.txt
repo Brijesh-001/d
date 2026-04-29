@@ -1,0 +1,529 @@
+nano cloud.c
+
+3. Save the file in nano
+Press Ctrl + O → Enter
+Press Ctrl + X
+sudo apt update                                    	nano cloud.c  
+sudo apt install gcc					gcc cloud.c -o cloud
+							./cloud
+4. Compile the program					cat cloud_storage.txt
+							sudo apt install gcc
+Use GCC compiler:
+
+gcc cloud.c -o cloud
+cloud.c = source file
+-o cloud = output executable name
+
+5. Run the program
+./cloud
+
+cat cloud_storage.txt
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    char data[1024];
+
+    /* Open file in write mode */
+    FILE *fptr = fopen("cloud_storage.txt", "w");
+
+    if (fptr == NULL)
+    {
+        printf("Error opening the file!\n");
+        exit(1);
+    }
+
+    /* Get user input */
+    printf("Enter text to store in the cloud: ");
+    fgets(data, sizeof(data), stdin);
+
+    /* Write data to file */
+    fprintf(fptr, "%s", data);
+
+    /* Close file */
+    fclose(fptr);
+
+    printf("Data successfully saved to 'cloud_storage.txt'\n");
+
+    return 0;
+}
+```
+
+
+
+-----------------------------------------------------------------------------------------------------
+
+
+nano cpu.c
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* Function to read CPU usage from /proc/stat */
+float get_cpu_usage()
+{
+    long double a[4], b[4], loadavg;
+    FILE *fp;
+
+    fp = fopen("/proc/stat", "r");
+    fscanf(fp, "%*s %Lf %Lf %Lf %Lf", &a[0], &a[1], &a[2], &a[3]);
+    fclose(fp);
+
+    sleep(1);
+
+    fp = fopen("/proc/stat", "r");
+    fscanf(fp, "%*s %Lf %Lf %Lf %Lf", &b[0], &b[1], &b[2], &b[3]);
+    fclose(fp);
+
+    loadavg = ((b[0] + b[1] + b[2]) - (a[0] + a[1] + a[2])) /
+              ((b[0] + b[1] + b[2] + b[3]) - (a[0] + a[1] + a[2] + a[3]));
+
+    return loadavg;
+}
+
+int main()
+{
+    FILE *log_file;
+    char *filename = "cpu_usage.log";
+
+    /* Open log file */
+    log_file = fopen(filename, "w");
+
+    if (log_file == NULL)
+    {
+        perror("Failed to open log file");
+        return EXIT_FAILURE;
+    }
+
+    /* Record CPU usage 10 times */
+    for (int i = 0; i < 10; i++)
+    {
+        float usage = get_cpu_usage();
+
+        fprintf(log_file, "CPU Usage: %.2f%%\n", usage * 100);
+        printf("Logged CPU Usage: %.2f%%\n", usage * 100);
+
+        sleep(5);
+    }
+
+    fclose(log_file);
+
+    printf("CPU usage logging completed.\n");
+
+    return 0;
+}
+
+
+
+Ctrl + O → Enter
+Ctrl + X
+
+
+sudo apt update
+sudo apt install gcc
+
+gcc cpu.c -o cpu
+
+./cpu
+
+
+
+-------------------------------------------------------------------------------------------------------------
+
+
+
+Prerequisite Test
+=============================
+sudo apt update
+sudo apt install openjdk-8-jdk -y
+java -version; javac -version
+sudo apt install openssh-server openssh-client -y sudo adduser hdoop
+su - hdoop
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys chmod 0600 ~/.ssh/authorized_keys
+ssh localhost
+Downloading Hadoop (Check the path where Hadoop has installed and set HADOOP_HOME
+to this path)
+===============================
+wget https://downloads.apache.org/hadoop/common/hadoop-3.2.3/hadoop-3.2.3.tar.gz tar xzf
+hadoop-3.2.3.tar.gz
+Editng 6 important files
+=================================
+1st file
+===========================
+sudo nano .bashrc - here you might face issue saying hdoop is not sudo user if this issue comes
+then
+su - aman
+sudo adduser hdoop sudo
+sudo nano .bashrc
+#Add below lines in this file
+#Hadoop Related Options
+export HADOOP_HOME=/home/hdoop/hadoop-3.2.3 export
+HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME export
+HADOOP_COMMON_HOME=$HADOOP_HOME
+Applied Big Data and Cloud Computing
+Dept. Of AIML, DSCE 2023-2024
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native export
+PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+export HADOOP_OPTS"-Djava.library.path=$HADOOP_HOME/lib/nativ"
+source ~/.bashrc 2nd File
+============================
+sudo nano $HADOOP_HOME/etc/hadoop/hadoop-env.sh #Add below line in this file in the
+end
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+3rd File
+===============================
+sudo nano $HADOOP_HOME/etc/hadoop/core-site.xml
+#Add below lines in this file(between "<configuration>" and "<"/configuration>")
+<property>
+<name>hadoop.tmp.dir</name>
+<value>/home/hdoop/tmpdata</value>
+<description>A base for other temporary directories.</description>
+</property>
+<property>
+<name>fs.default.name</name>
+<value>hdfs://localhost:9000</value>
+<description>The name of the default file system></description>
+</property>
+4th File
+====================================
+sudo nano $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+#Add below lines in this file(between "<configuration>" and "<"/configuration>")
+<property>
+<name>dfs.data.dir</name>
+<value>/home/hdoop/dfsdata/namenode</value>
+</property>
+<property>
+<name>dfs.data.dir</name>
+<value>/home/hdoop/dfsdata/datanode</value>
+</property>
+<property>
+Applied Big Data and Cloud Computing
+Dept. Of AIML, DSCE 2023-2024
+<name>dfs.replication</name>
+<value>1</value>
+</property>
+5th File
+================================================
+sudo nano $HADOOP_HOME/etc/hadoop/mapred-site.xml
+#Add below lines in this file(between "<configuration>" and "<"/configuration>")
+<property>
+<name>mapreduce.framework.name</name>
+<value>yarn</value>
+</property>
+6th File
+==================================================
+sudo nano $HADOOP_HOME/etc/hadoop/yarn-site.xml
+#Add below lines in this file(between "<configuration>" and "<"/configuration>")
+<property>
+<name>yarn.nodemanager.aux-services</name>
+<value>mapreduce_shuffle</value>
+</property>
+<property>
+<name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+<value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>
+<property>
+<name>yarn.resourcemanager.hostname</name>
+<value>127.0.0.1</value>
+</property>
+<property>
+<name>yarn.acl.enable</name>
+<value>0</value>
+</property>
+<property>
+<name>yarn.nodemanager.env-whitelist</name>
+Applied Big Data and Cloud Computing
+Dept. Of AIML, DSCE 2023-2024
+<value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOO
+P_CONF_DIR,CLASSPATH_PERPEND_DISTCACHE,HADOOP_YARN_HOME,HAD
+OOP_MAPRED_HOME</value>
+</property>
+Launching Hadoop (Change to sbin path and run)
+==================================
+hdfs namenode -format
+./start-dfs.sh
+./start-yarn.sh
+To check all the daemons of Hadoop s running give JPS and check
+
+
+
+
+
+--------------------------------------------------------------------------------------
+
+
+
+/* =========================
+   1. WCDriver.java
+   ========================= */
+
+import java.io.IOException;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+public class WCDriver extends Configured implements Tool
+{
+    public int run(String args[]) throws IOException
+    {
+        if (args.length < 2)
+        {
+            System.out.println("Please give valid inputs");
+            return -1;
+        }
+
+        JobConf conf = new JobConf(WCDriver.class);
+
+        FileInputFormat.setInputPaths(conf, new Path(args[0]));
+        FileOutputFormat.setOutputPath(conf, new Path(args[1]));
+
+        conf.setMapperClass(WCMapper.class);
+        conf.setReducerClass(WCReducer.class);
+
+        conf.setMapOutputKeyClass(Text.class);
+        conf.setMapOutputValueClass(IntWritable.class);
+
+        conf.setOutputKeyClass(Text.class);
+        conf.setOutputValueClass(IntWritable.class);
+
+        JobClient.runJob(conf);
+
+        return 0;
+    }
+
+    public static void main(String args[]) throws Exception
+    {
+        int exitCode = ToolRunner.run(new WCDriver(), args);
+        System.out.println(exitCode);
+    }
+}
+
+
+/* =========================
+   2. WCMapper.java
+   ========================= */
+
+import java.io.IOException;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.Mapper;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reporter;
+
+public class WCMapper extends MapReduceBase
+implements Mapper<LongWritable, Text, Text, IntWritable>
+{
+    public void map(LongWritable key, Text value,
+                    OutputCollector<Text, IntWritable> output,
+                    Reporter rep) throws IOException
+    {
+        String line = value.toString();
+
+        String words[] = line.split(" ");
+
+        for (String word : words)
+        {
+            if (word.length() > 0)
+            {
+                output.collect(new Text(word), new IntWritable(1));
+            }
+        }
+    }
+}
+
+
+
+/* =========================
+   3. WCReducer.java
+   ========================= */
+
+import java.io.IOException;
+import java.util.Iterator;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reducer;
+import org.apache.hadoop.mapred.Reporter;
+
+public class WCReducer extends MapReduceBase
+implements Reducer<Text, IntWritable, Text, IntWritable>
+{
+    public void reduce(Text key,
+                       Iterator<IntWritable> value,
+                       OutputCollector<Text, IntWritable> output,
+                       Reporter rep) throws IOException
+    {
+        int count = 0;
+
+        while (value.hasNext())
+        {
+            IntWritable i = value.next();
+            count = count + i.get();
+        }
+
+        output.collect(key, new IntWritable(count));
+    }
+}
+
+----------------------------------------------------------------------
+```text
+LAB - 6
+
+Hadoop Programming: Word Count Map Reduce Program using Java
+
+1. VM box → Hadoop training tool
+2. Select hadoop user
+3. Eclipse → File → New → Java Project → Project name: word count
+4. Right click on word count → New → Class
+      WCDriver
+      WCMapper
+      WCReducer
+
+5. WCDriver:
+   Write code
+
+   Right click on word count → Build Path → Configure →
+   Add external jar →
+
+   On left side, click on "hadoop" →
+   Right side double click on training
+
+   Double click on CDH4 →
+   Double click on hadoop-2.0.0
+
+   share → hadoop → common → 1st option of 2.0.0
+
+6. Wordcount → Build Path → Configure → Add jar →
+   mapreduce → 3rd option (client core) → OK
+
+7. Word count → Export → jar file → Next
+
+8. /home/hadoop/wc.jar     [Jar file → Address] → OK
+
+9. Click Terminal icon on top:
+
+   start-all.sh
+   jps (give programming space)
+
+10. vi AIML.txt
+      → Write repetitive words
+
+   Esc + Shift + semicolon
+   wq + Enter   [Exiting]
+
+11. hadoop fs -put AIML.txt AIML.txt
+
+12. hadoop jar wc.jar WCDriver AIML.txt AIMLOutput
+
+13. hadoop fs -cat AIMLOutput/part-80000
+```
+----------------------------------------------------------------------------
+
+
+
+7: File management task in Hadoop using HDFS commands
+
+a) Uploading files to HDFS
+b) Retrieve files from HDFS
+c) Deleting files from HDFS
+
+Globe shape → Hadoop Manager → Open all in tabs
+
+Browse file system → userdir → hadoop → create
+
+Terminal → 
+
+						startCDH.sh
+
+• 						hdfs dfs -mkdir bda
+ → Enter
+refresh → click directory name
+
+• Create text file → 
+						vi aiml.txt 	esc+shift+:
+→ write something
+ 						 wq + Enter
+
+• 						hdfs dfs -put aiml.txt /user/hadoop/bda
+
+• Create new dir → 				hdfs dfs -mkdir tda
+
+• Move
+  						hdfs dfs -mv /user/hadoop/bda/ai.txt /user/hadoop/tda/
+
+• Copy
+  						hdfs dfs -cp /user/hadoop/bda/ai.txt /user/hadoop/tda
+
+• Remove
+ 						 hdfs dfs -rm /user/hadoop/bda/ai.txt
+
+• View file content
+ 						 hdfs dfs -cat /user/hadoop/bda/ai.txt
+
+
+
+
+____________________________________________________________________________________________________________
+
+Dataset: https://drive.google.com/file/d/19f46bidHi8pSno6QcS2TxIQ8ol_tLg-r/view?usp=sharing 
+# Import necessary libraries
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType
+
+# Initialize SparkSession
+spark = SparkSession.builder \
+    .appName("FIFADataFrameExample") \
+    .getOrCreate()
+
+# Define the schema for the FIFA dataset
+schema = StructType([
+    StructField("team", StringType(), True),
+    StructField("team_code", StringType(), True),
+    StructField("association", StringType(), True),
+    StructField("rank", IntegerType(), True),
+    StructField("previous_rank", IntegerType(), True),
+    StructField("points", FloatType(), True),
+    StructField("previous_points", FloatType(), True)
+])
+
+# Load FIFA dataset from CSV
+file_path = "/content/fifa_ranking_2022-10-06.csv" 
+fifa_df = spark.read.csv("/content/fifa_ranking_2022-10-06.csv", header=True, schema=schema)
+
+# Show DataFrame
+fifa_df.show();
+
+# Select and show specific columns
+fifa_df.select("previous_points").show()
+
+# Stop SparkSession
+spark.stop()
+
+
+
+
+
+
+
+
+
+
+
